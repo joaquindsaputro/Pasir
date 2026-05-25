@@ -1,0 +1,11 @@
+{
+  "name": "pasir-icons-generator",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "generate-icons": "node tools/generate-icons.js"
+  },
+  "dependencies": {
+    "sharp": "^0.32.0"
+  }
+}

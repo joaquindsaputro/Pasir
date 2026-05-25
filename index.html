@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pabrik Monster Pasir</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ffcc00">
+    <link rel="icon" href="images/icons/icon192.png" sizes="192x192" type="image/png">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="viewport">
+    <div id="world">
+        <div class="castle-spot" data-index="0" style="top: 32%; left: 34%;"></div>
+        <div class="castle-spot" data-index="1" style="top: 32%; left: 51%;"></div>
+        <div class="castle-spot" data-index="2" style="top: 32%; left: 68%;"></div>
+        <div class="castle-spot" data-index="3" style="top: 62%; left: 30%;"></div>
+        <div class="castle-spot" data-index="4" style="top: 62%; left: 48%;"></div>
+        <div class="castle-spot" data-index="5" style="top: 62%; left: 66%;"></div>
+    </div>
+</div>
+
+<div id="shovel"></div>
+
+<div id="hatch-overlay">
+    <div id="center-egg">
+        <div id="monster-reveal"></div>
+    </div>
+</div>
+
+<script src="script.js" defer></script>
+</body>
+</html>
