@@ -145,6 +145,9 @@ let shovelPointerId = null;
 let shovelOffsetX = 0;
 let shovelOffsetY = 0;
 let lastHitIdx = null; // untuk mencegah multiple hits saat terus menempel
+let pendingHitIdx = null;
+let pendingHitStart = 0;
+const HIT_DELAY_MS = 180; // delay sebelum pasir rusak saat ujung sekop menyentuh
 
 // Batasi pergerakan sekop agar tidak keluar dari peta (world)
 function clampShovelPosition(x, y) {
@@ -194,7 +197,10 @@ function handleShovelHit(castle) {
     } else if (castleStates[idx] === 2) {
         sandLayer.style.backgroundImage = `url('images/sands/3.png')`;
         const egg = castle.querySelector('.buried-egg');
-        if (egg) egg.classList.add('show');
+        if (egg) {
+            egg.style.transition = 'none';
+            egg.style.scale = '1';
+        }
     }
 }
 
@@ -224,6 +230,7 @@ shovel.addEventListener('pointermove', (e) => {
         const spots = document.querySelectorAll('.castle-spot');
         let hitFound = false;
         const shrinkFactor = 0.3; // hitbox ~30% of visual size
+        const now = performance.now();
         spots.forEach((spot) => {
             const idx = Number(spot.getAttribute('data-index'));
             const r = spot.getBoundingClientRect();
@@ -237,13 +244,24 @@ shovel.addEventListener('pointermove', (e) => {
             const intersects = tipX >= shrLeft && tipX <= shrRight && tipY >= shrTop && tipY <= shrBottom;
             if (intersects) {
                 hitFound = true;
-                if (lastHitIdx !== idx) {
+                if (lastHitIdx === idx) return;
+
+                if (pendingHitIdx !== idx) {
+                    pendingHitIdx = idx;
+                    pendingHitStart = now;
+                } else if (now - pendingHitStart >= HIT_DELAY_MS) {
                     lastHitIdx = idx;
+                    pendingHitIdx = null;
+                    pendingHitStart = 0;
                     handleShovelHit(spot);
                 }
             }
         });
-        if (!hitFound) lastHitIdx = null;
+        if (!hitFound) {
+            lastHitIdx = null;
+            pendingHitIdx = null;
+            pendingHitStart = 0;
+        }
     } catch (err) {
         // jika terjadi error, jangan ganggu pengalaman drag
         console.warn('Shovel hit detection error', err);
@@ -256,15 +274,8 @@ function endShovelDrag(e) {
     shovel.releasePointerCapture(shovelPointerId);
     shovelPointerId = null;
 
-    const shovelRect = shovel.getBoundingClientRect();
-    const tipX = shovelRect.left;
-    const tipY = shovelRect.bottom;
-    shovel.style.visibility = 'hidden'; 
-    const hitElement = document.elementFromPoint(tipX, tipY);
+    // Tidak melakukan hit langsung di pointerup; damage di-trigger oleh delay saat bergerak.
     shovel.style.visibility = 'visible';
-    
-    const castle = hitElement && hitElement.closest('.castle-spot');
-    handleShovelHit(castle);
 }
 
 shovel.addEventListener('pointerup', endShovelDrag);
@@ -322,7 +333,6 @@ viewport.addEventListener('pointerdown', (e) => {
     if (document.getElementById('hatch-overlay').classList.contains('active')) return;
     if (isDraggingShovel) return;
     if (e.target.closest('#shovel')) return;
-    if (e.target.closest('.castle-spot')) return;
 
     e.preventDefault();
     isDragging = true;
