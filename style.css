@@ -80,8 +80,8 @@ body {
     margin-left: -42.5px; /* Centering murni agar lurus vertikal (Lebar telur 85px / 2) */
     bottom: 90px; /* Titik mula di bawah pasir (Sudah dinaikkan 100px dari dasar) */
     filter: brightness(0.75) contrast(1.2);
-    width: 55px; 
-    height: 75px;
+    width: 35px; 
+    height: 55px;
     background-size: cover;
     background-position: center;
     border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
