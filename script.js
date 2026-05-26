@@ -138,6 +138,7 @@ document.querySelectorAll('.castle-spot').forEach(el => {
         // Pindahkan posisi koordinat gambar alat sekop ke area klik
         shovel.style.left = (e.clientX - 40) + 'px';
         shovel.style.top = (e.clientY - 40) + 'px';
+        shovel.style.opacity = '1';
         shovel.classList.remove('digging');
         void shovel.offsetWidth; // Memicu pengaturan ulang DOM agar animasi dapat berulang
         shovel.classList.add('digging');

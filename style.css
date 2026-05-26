@@ -39,8 +39,8 @@ body {
 /* Elemen Istana Pasir (Ukuran jumbo 3x lipat sesuai CorelDraw) */
 .castle-spot {
     position: absolute;
-    width: 380px;
-    height: 380px;
+    width: 400px;
+    height: 400px;
     transform: translate(-50%, -50%);
     background-size: contain;
     background-repeat: no-repeat;
@@ -71,14 +71,14 @@ body {
 .buried-egg {
     position: absolute;
     left: 50%;
-    margin-left: -32.5px; /* Centering murni agar lurus vertikal (Lebar telur 65px / 2) */
-    bottom: 100px; /* Titik mula di bawah pasir (Sudah dinaikkan 100px dari dasar) */
+    margin-left: -42.5px; /* Centering murni agar lurus vertikal (Lebar telur 85px / 2) */
+    bottom: 90px; /* Titik mula di bawah pasir (Sudah dinaikkan 100px dari dasar) */
     
     /* Menggunakan properti scale modern agar tidak bentrok dengan keyframe translate/rotate */
     scale: 0; 
     
-    width: 65px; 
-    height: 85px;
+    width: 85px; 
+    height: 105px;
     background-size: cover;
     background-position: center;
     border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
