@@ -271,6 +271,8 @@ const world = document.getElementById('world');
 const viewport = document.getElementById('viewport');
 let scale = 1, posX = 0, posY = 0;
 let isDragging = false, startX, startY;
+let startPointerX = 0, startPointerY = 0;
+let startPosX = 0, startPosY = 0;
 let initialDistance = null, initialScale = 1;
 
 function getDistance(touches) {
@@ -278,7 +280,36 @@ function getDistance(touches) {
 }
 
 function updateTransform() {
+    // Clamp pan so world doesn't move outside viewport bounds
+    clampPan();
     world.style.transform = `translate(${posX}px, ${posY}px) scale(${scale})`;
+}
+
+function clampPan() {
+    const vpW = viewport.clientWidth;
+    const vpH = viewport.clientHeight;
+    const worldW = world.offsetWidth * scale;
+    const worldH = world.offsetHeight * scale;
+
+    let minX, maxX, minY, maxY;
+
+    if (worldW > vpW) {
+        minX = vpW - worldW;
+        maxX = 0;
+    } else {
+        // center when world smaller than viewport
+        minX = maxX = (vpW - worldW) / 2;
+    }
+
+    if (worldH > vpH) {
+        minY = vpH - worldH;
+        maxY = 0;
+    } else {
+        minY = maxY = (vpH - worldH) / 2;
+    }
+
+    posX = Math.min(Math.max(posX, minX), maxX);
+    posY = Math.min(Math.max(posY, minY), maxY);
 }
 
 // Logika Drag Geser Map (Pan)
@@ -290,16 +321,21 @@ viewport.addEventListener('pointerdown', (e) => {
     if (e.target.closest('.castle-spot')) return;
 
     isDragging = true;
-    startX = e.clientX - posX;
-    startY = e.clientY - posY;
+    startPointerX = e.clientX;
+    startPointerY = e.clientY;
+    startPosX = posX;
+    startPosY = posY;
 });
 
 viewport.addEventListener('pointermove', (e) => {
     if (!isDragging) return;
     if (isDraggingShovel) return;
 
-    posX = e.clientX - startX;
-    posY = e.clientY - startY;
+    const dx = e.clientX - startPointerX;
+    const dy = e.clientY - startPointerY;
+    // Convert screen movement to world-space movement (unscaled)
+    posX = startPosX + dx / scale;
+    posY = startPosY + dy / scale;
     updateTransform();
 });
 
@@ -344,7 +380,6 @@ function openHatchOverlay(index, eggImgSrc) {
     centerEgg.style.opacity = '1';
     centerEgg.style.backgroundColor = 'transparent';
     centerEgg.style.boxShadow = 'inset -20px -20px 40px rgba(0,0,0,0.6)';
-    centerEgg.classList.remove('shake');
     monsterReveal.classList.remove('show');
     
     // Taruh monster unik yang sudah ditentukan tanpa takut kembar
@@ -360,15 +395,10 @@ centerEgg.addEventListener('pointerdown', () => {
     hatchClicks++;
     playCrackSound(0.4 + (hatchClicks * 0.12)); // Suara pukulan cangkang semakin nyaring kencang
     
-    // Guncang telur mengikuti kecepatan ketukan jari tangan
-    centerEgg.classList.remove('shake');
-    void centerEgg.offsetWidth;
-    centerEgg.classList.add('shake');
-    centerEgg.style.animationDuration = (0.35 - (hatchClicks * 0.06)) + 's'; // Efek getaran semakin kencang menjelang pecah
+    // (Telur tidak lagi diguncang secara visual)
 
     if (hatchClicks >= clicksNeeded) {
         // Momen Klimaks -> Telur Menetas!
-        centerEgg.classList.remove('shake');
         centerEgg.style.backgroundImage = 'none'; // Cangkang lenyap seketika
         centerEgg.style.boxShadow = 'none';
         playCrackSound(1.6); // Ledakan sfx pecah keras

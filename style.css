@@ -91,28 +91,10 @@ body {
     pointer-events: none;
     z-index: 2; /* Di bawah pasir (sand-layer z-index: 3) */
     box-shadow: inset -10px -10px 20px rgba(0,0,0,0.5);
-    
-    /* Transisi hanya fokus untuk naik ke atas (bottom) dan membesar (scale) */
-    transition: bottom 2.5s ease-out, scale 0.5s ease-out;
+
 }
 
-/* Kondisi aktif saat telur menyembul keluar */
-.buried-egg.show {
-    bottom: 275px; /* Berhenti presisi di atas pasir sesuai ukuran CorelDraw kamu bang */
-    scale: 1;
-    pointer-events: auto;
-    cursor: pointer;
-    
-    /* Menjalankan getaran intens selama merangkak naik (0.1 detik x 25 repetisi = 2.5 detik pas!) */
-    animation: emergeVibrate 0.1s 25; 
-}
 
-/* Keyframe getaran murni menggunakan translate & rotate independen browser modern */
-@keyframes emergeVibrate {
-    0% { translate: -4px 0; rotate: -3deg; }
-    50% { translate: 4px 0; rotate: 3deg; }
-    100% { translate: -4px 0; rotate: -3deg; }
-}
 
 /* ==========================================================================
    SEKOP & ANIMASI DIGGING
@@ -215,21 +197,4 @@ body {
     transform: translate(-50%, -50%) scale(1.3);
 }
 
-/* Efek Guncangan Cangkang saat Dipukul Jari */
-.shake {
-    animation: shakeEgg 0.3s infinite;
-}
-
-@keyframes shakeEgg {
-    0% { transform: translate(2px, 1px) rotate(0deg); }
-    10% { transform: translate(-1px, -2px) rotate(-2deg); }
-    20% { transform: translate(-3px, 0px) rotate(2deg); }
-    30% { transform: translate(0px, 2px) rotate(0deg); }
-    40% { transform: translate(1px, -1px) rotate(2deg); }
-    50% { transform: translate(-1px, 2px) rotate(-1deg); }
-    60% { transform: translate(-3px, 1px) rotate(0deg); }
-    70% { transform: translate(2px, 1px) rotate(-2deg); }
-    80% { transform: translate(-1px, -1px) rotate(2deg); }
-    90% { transform: translate(2px, 2px) rotate(0deg); }
-    100% { transform: translate(1px, -2px) rotate(-1deg); }
-}
+/* Egg shake animation removed per user request */
