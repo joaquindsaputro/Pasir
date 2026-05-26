@@ -77,31 +77,44 @@ function initAudio() {
 // Efek Gesekan Suara Sekop Pasir Pantai (*krsk*) menggunakan algoritma White Noise Generator
 function playSandSound() {
     initAudio();
-    const bufferSize = audioCtx.sampleRate * 0.2; // Waktu sfx berdurasi 0.2 detik
-    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const duration = 0.14; // pendek dan renyah
+    const sampleRate = audioCtx.sampleRate;
+    const buffer = audioCtx.createBuffer(1, Math.floor(sampleRate * duration), sampleRate);
     const data = buffer.getChannelData(0);
-    
-    for (let i = 0; i < bufferSize; i++) {
-        data[i] = Math.random() * 2 - 1;
+
+    // White noise with soft envelope (fade-out) to avoid sharp transient
+    for (let i = 0; i < data.length; i++) {
+        // apply slight decay into the buffer so the tail is softer
+        const env = 1 - (i / data.length);
+        data[i] = (Math.random() * 2 - 1) * 0.6 * env;
     }
-    
+
     const noiseNode = audioCtx.createBufferSource();
     noiseNode.buffer = buffer;
-    
-    // Lowpass filter memotong suara bising tinggi agar terasa berat seperti pasir tanah asli
-    const filterNode = audioCtx.createBiquadFilter();
-    filterNode.type = 'lowpass';
-    filterNode.frequency.value = 750;
-    
+
+    // Gentle highpass to remove rumble, then lowpass to remove harsh clicks
+    const hp = audioCtx.createBiquadFilter();
+    hp.type = 'highpass';
+    hp.frequency.value = 220;
+    hp.Q.value = 0.7;
+
+    const lp = audioCtx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.value = 1400;
+    lp.Q.value = 0.9;
+
     const gainNode = audioCtx.createGain();
-    gainNode.gain.setValueAtTime(0.8, audioCtx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
-    
-    noiseNode.connect(filterNode);
-    filterNode.connect(gainNode);
+    const now = audioCtx.currentTime;
+    gainNode.gain.setValueAtTime(0.22, now);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, now + duration);
+
+    // route
+    noiseNode.connect(hp);
+    hp.connect(lp);
+    lp.connect(gainNode);
     gainNode.connect(audioCtx.destination);
-    
-    noiseNode.start();
+
+    noiseNode.start(now);
 }
 
 // Efek Pukulan/Hantaman Keretakan Kulit Telur menggunakan Oscillator Sawtooth
@@ -208,10 +221,18 @@ shovel.addEventListener('pointermove', (e) => {
         const shovelRect = shovel.getBoundingClientRect();
         const spots = document.querySelectorAll('.castle-spot');
         let hitFound = false;
+        const shrinkFactor = 0.3; // hitbox ~30% of visual size
         spots.forEach((spot) => {
             const idx = Number(spot.getAttribute('data-index'));
             const r = spot.getBoundingClientRect();
-            const intersects = !(shovelRect.right < r.left || shovelRect.left > r.right || shovelRect.bottom < r.top || shovelRect.top > r.bottom);
+            const shrW = r.width * shrinkFactor;
+            const shrH = r.height * shrinkFactor;
+            const shrLeft = r.left + (r.width - shrW) / 2;
+            const shrTop = r.top + (r.height - shrH) / 2;
+            const shrRight = shrLeft + shrW;
+            const shrBottom = shrTop + shrH;
+
+            const intersects = !(shovelRect.right < shrLeft || shovelRect.left > shrRight || shovelRect.bottom < shrTop || shovelRect.top > shrBottom);
             if (intersects) {
                 hitFound = true;
                 if (lastHitIdx !== idx) {
