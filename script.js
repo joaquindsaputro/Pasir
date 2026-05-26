@@ -59,7 +59,7 @@ document.querySelectorAll('.castle-spot').forEach((el, index) => {
     // Bikin Layer 3: Pasir
     const sand = document.createElement('div');
     sand.className = 'sand-layer';
-    sand.style.backgroundImage = `url('images/1.png')`; // Mulai dari istana utuh
+    sand.style.backgroundImage = `url('images/sands/1.png')`; // Mulai dari istana utuh
     el.appendChild(sand); // Masuk belakangan (niban telur)
 });
 
@@ -161,9 +161,9 @@ function handleShovelHit(castle) {
     const sandLayer = castle.querySelector('.sand-layer');
 
     if (castleStates[idx] === 1) {
-        sandLayer.style.backgroundImage = `url('images/2.png')`;
+        sandLayer.style.backgroundImage = `url('images/sands/2.png')`;
     } else if (castleStates[idx] === 2) {
-        sandLayer.style.backgroundImage = `url('images/3.png')`;
+        sandLayer.style.backgroundImage = `url('images/sands/3.png')`;
         const egg = castle.querySelector('.buried-egg');
         if (egg) egg.classList.add('show');
     }

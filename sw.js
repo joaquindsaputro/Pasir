@@ -1,17 +1,37 @@
-const CACHE_NAME = 'monster-pasir-cache-v2';
+const CACHE_VERSION = 3;
+const CACHE_PREFIX = 'monster-pasir-cache-v';
+const CACHE_NAME = `${CACHE_PREFIX}${CACHE_VERSION}`;
 const PRECACHE_URLS = [
   '/',
   '/index.html',
   '/script.js',
   '/style.css',
   '/manifest.json',
+  '/images/bg1.jpg',
+  '/images/sekop.png',
   '/images/icons/icon192.png',
-  '/images/icons/icon512.png'
+  '/images/icons/icon512.png',
+  '/images/sands/1.png',
+  '/images/sands/2.png',
+  '/images/sands/3.png',
+  '/images/egg/1.jpg',
+  '/images/egg/2.jpg',
+  '/images/egg/3.jpg',
+  '/images/egg/4.jpg',
+  '/images/egg/5.jpg',
+  '/images/egg/6.jpg'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_URLS))
+    caches.keys()
+      .then((keys) => Promise.all(
+        keys
+          .filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME)
+          .map((oldKey) => caches.delete(oldKey))
+      ))
+      .then(() => caches.open(CACHE_NAME))
+      .then((cache) => cache.addAll(PRECACHE_URLS))
   );
   self.skipWaiting();
 });
@@ -21,7 +41,9 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((keys) =>
       Promise.all(
         keys.map((key) => {
-          if (key !== CACHE_NAME) return caches.delete(key);
+          if (key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME) {
+            return caches.delete(key);
+          }
         })
       )
     )
