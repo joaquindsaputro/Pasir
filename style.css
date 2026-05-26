@@ -39,14 +39,20 @@ body {
 /* Elemen Istana Pasir (Ukuran jumbo 3x lipat sesuai CorelDraw) */
 .castle-spot {
     position: absolute;
-    width: 400px;
-    height: 400px;
+    width: clamp(140px, 22vw, 380px);
+    height: clamp(140px, 22vw, 380px);
     transform: translate(-50%, -50%);
     background-size: contain;
     background-repeat: no-repeat;
     background-position: bottom center;
     cursor: pointer;
     z-index: 10;
+}
+
+.castle-spot .buried-egg {
+    width: clamp(68px, 14vw, 85px);
+    height: clamp(82px, 17vw, 105px);
+    margin-left: calc(-1 * clamp(34px, 7vw, 42.5px));
 }
 
 /* Layer Pasir Atasan (Z-Index 3 untuk menutupi telur di bawahnya) */
@@ -115,7 +121,8 @@ body {
 /* Kursor Alat Sekop Kustom */
 #shovel {
     position: fixed;
-    right: 18px;
+    left: calc(100vw - 108px);
+    right: auto;
     top: 46%;
     width: 90px;
     height: 90px;

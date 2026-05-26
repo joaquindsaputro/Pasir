@@ -178,6 +178,7 @@ shovel.addEventListener('pointerdown', (e) => {
     const rect = shovel.getBoundingClientRect();
     shovelOffsetX = e.clientX - rect.left;
     shovelOffsetY = e.clientY - rect.top;
+    shovel.style.right = 'auto';
     shovel.classList.add('dragging');
 });
 
@@ -336,7 +337,10 @@ centerEgg.addEventListener('pointerdown', () => {
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')
-            .then(reg => console.log('ServiceWorker registered:', reg.scope))
-            .catch(err => console.warn('ServiceWorker registration failed:', err));
+            .then((reg) => {
+                console.log('ServiceWorker registered:', reg.scope);
+                if (reg.update) reg.update();
+            })
+            .catch((err) => console.warn('ServiceWorker registration failed:', err));
     });
 }
