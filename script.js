@@ -219,6 +219,8 @@ shovel.addEventListener('pointermove', (e) => {
     // Cek tumpang-tindih dengan setiap castle-spot saat sedang drag
     try {
         const shovelRect = shovel.getBoundingClientRect();
+        const tipX = shovelRect.left;
+        const tipY = shovelRect.bottom;
         const spots = document.querySelectorAll('.castle-spot');
         let hitFound = false;
         const shrinkFactor = 0.3; // hitbox ~30% of visual size
@@ -232,7 +234,7 @@ shovel.addEventListener('pointermove', (e) => {
             const shrRight = shrLeft + shrW;
             const shrBottom = shrTop + shrH;
 
-            const intersects = !(shovelRect.right < shrLeft || shovelRect.left > shrRight || shovelRect.bottom < shrTop || shovelRect.top > shrBottom);
+            const intersects = tipX >= shrLeft && tipX <= shrRight && tipY >= shrTop && tipY <= shrBottom;
             if (intersects) {
                 hitFound = true;
                 if (lastHitIdx !== idx) {
@@ -254,9 +256,11 @@ function endShovelDrag(e) {
     shovel.releasePointerCapture(shovelPointerId);
     shovelPointerId = null;
 
-    // Sembunyikan sekop sesaat untuk mendeteksi apa yang ada di bawahnya
+    const shovelRect = shovel.getBoundingClientRect();
+    const tipX = shovelRect.left;
+    const tipY = shovelRect.bottom;
     shovel.style.visibility = 'hidden'; 
-    const hitElement = document.elementFromPoint(e.clientX, e.clientY);
+    const hitElement = document.elementFromPoint(tipX, tipY);
     shovel.style.visibility = 'visible';
     
     const castle = hitElement && hitElement.closest('.castle-spot');
@@ -270,7 +274,7 @@ shovel.addEventListener('pointercancel', endShovelDrag);
 const world = document.getElementById('world');
 const viewport = document.getElementById('viewport');
 let scale = 1, posX = 0, posY = 0;
-let isDragging = false, startX, startY;
+let isDragging = false;
 let startPointerX = 0, startPointerY = 0;
 let startPosX = 0, startPosY = 0;
 let initialDistance = null, initialScale = 1;
@@ -282,7 +286,7 @@ function getDistance(touches) {
 function updateTransform() {
     // Clamp pan so world doesn't move outside viewport bounds
     clampPan();
-    world.style.transform = `translate(${posX}px, ${posY}px) scale(${scale})`;
+    world.style.transform = `scale(${scale}) translate(${posX}px, ${posY}px)`;
 }
 
 function clampPan() {
@@ -320,6 +324,7 @@ viewport.addEventListener('pointerdown', (e) => {
     if (e.target.closest('#shovel')) return;
     if (e.target.closest('.castle-spot')) return;
 
+    e.preventDefault();
     isDragging = true;
     startPointerX = e.clientX;
     startPointerY = e.clientY;
@@ -333,14 +338,14 @@ viewport.addEventListener('pointermove', (e) => {
 
     const dx = e.clientX - startPointerX;
     const dy = e.clientY - startPointerY;
-    // Convert screen movement to world-space movement (unscaled)
-    posX = startPosX + dx / scale;
-    posY = startPosY + dy / scale;
+    posX = startPosX + dx;
+    posY = startPosY + dy;
     updateTransform();
 });
 
 viewport.addEventListener('pointerup', () => isDragging = false);
 viewport.addEventListener('pointerleave', () => isDragging = false);
+viewport.addEventListener('pointercancel', () => isDragging = false);
 
 // Fitur Cubit Layar (Pinch to Zoom) untuk Kamera Intro Konten HP
 viewport.addEventListener('touchstart', (e) => {
