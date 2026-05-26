@@ -21,14 +21,16 @@ const eggImages = [
 
 // Warna overlay unik untuk tiap telur (tidak boleh ada warna yang sama di 6 telur)
 const colorPalette = [
-    'rgba(255,99,71,0.30)',    // tomato
-    'rgba(255,165,0,0.30)',    // orange
-    'rgba(60,179,113,0.30)',   // mediumseagreen
-    'rgba(65,105,225,0.30)',   // royalblue
-    'rgba(186,85,211,0.30)',   // mediumorchid
-    'rgba(255,215,0,0.30)',    // gold
-    'rgba(244,164,96,0.30)',   // sandybrown
-    'rgba(70,130,180,0.30)'    // steelblue (extra options)
+    'rgba(255,99,71,0.44)',    // tomato
+    'rgba(255,165,0,0.44)',    // orange
+    'rgba(60,179,113,0.44)',   // mediumseagreen
+    'rgba(65,105,225,0.44)',   // royalblue
+    'rgba(186,85,211,0.44)',   // mediumorchid
+    'rgba(255,215,0,0.44)',    // gold
+    'rgba(244,164,96,0.44)',   // sandybrown
+    'rgba(70,130,180,0.44)',   // steelblue
+    'rgba(199,21,133,0.44)',   // mediumvioletred
+    'rgba(64,224,208,0.44)'    // turquoise
 ];
 
 function shuffleArray(arr) {
@@ -54,6 +56,12 @@ document.querySelectorAll('.castle-spot').forEach((el, index) => {
         e.stopPropagation();
         openHatchOverlay(index, eggImages[index]);
     });
+
+    const eggOverlay = document.createElement('div');
+    eggOverlay.className = 'egg-color-overlay';
+    eggOverlay.style.backgroundColor = eggOverlays[index];
+    egg.appendChild(eggOverlay);
+
     el.appendChild(egg); // Masuk duluan
 
     // Bikin Layer 3: Pasir
@@ -199,7 +207,6 @@ function handleShovelHit(castle) {
         const egg = castle.querySelector('.buried-egg');
         if (egg) {
             egg.style.transition = 'none';
-            egg.style.scale = '1';
         }
     }
 }

@@ -79,19 +79,24 @@ body {
     left: 50%;
     margin-left: -42.5px; /* Centering murni agar lurus vertikal (Lebar telur 85px / 2) */
     bottom: 90px; /* Titik mula di bawah pasir (Sudah dinaikkan 100px dari dasar) */
-    
-    /* Menggunakan properti scale modern agar tidak bentrok dengan keyframe translate/rotate */
-    scale: 0; 
-    
-    width: 85px; 
-    height: 105px;
+    filter: brightness(0.75) contrast(1.2);
+    width: 75px; 
+    height: 95px;
     background-size: cover;
     background-position: center;
     border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
     pointer-events: none;
     z-index: 2; /* Di bawah pasir (sand-layer z-index: 3) */
     box-shadow: inset -10px -10px 20px rgba(0,0,0,0.5);
+}
 
+.buried-egg .egg-color-overlay {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    mix-blend-mode: overlay;
+    opacity: 0.85;
+    pointer-events: none;
 }
 
 
