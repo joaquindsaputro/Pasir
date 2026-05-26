@@ -131,12 +131,14 @@ let isDraggingShovel = false;
 let shovelPointerId = null;
 let shovelOffsetX = 0;
 let shovelOffsetY = 0;
+let lastHitIdx = null; // untuk mencegah multiple hits saat terus menempel
 
+// Batasi pergerakan sekop agar tidak keluar dari peta (world)
 function clampShovelPosition(x, y) {
     const minX = 0;
     const minY = 0;
-    const maxX = window.innerWidth - shovel.offsetWidth;
-    const maxY = window.innerHeight - shovel.offsetHeight;
+    const maxX = world.offsetWidth - shovel.offsetWidth;
+    const maxY = world.offsetHeight - shovel.offsetHeight;
     return {
         x: Math.min(Math.max(minX, x), maxX),
         y: Math.min(Math.max(minY, y), maxY)
@@ -144,9 +146,17 @@ function clampShovelPosition(x, y) {
 }
 
 function moveShovel(clientX, clientY) {
-    const targetX = clientX - shovelOffsetX;
-    const targetY = clientY - shovelOffsetY;
-    const pos = clampShovelPosition(targetX, targetY);
+    // KUNCI PERBAIKAN: Konversi koordinat layar (screen) ke koordinat dunia (world)
+    // dengan memperhitungkan faktor pan (posX/Y) dan zoom (scale)
+    const worldX = (clientX - posX) / scale - shovelOffsetX;
+    const worldY = (clientY - posY) / scale - shovelOffsetY;
+    
+    const pos = clampShovelPosition(worldX, worldY);
+    
+    // Lepaskan ikatan right/bottom awal dari CSS
+    shovel.style.right = 'auto';
+    shovel.style.bottom = 'auto';
+    
     shovel.style.left = pos.x + 'px';
     shovel.style.top = pos.y + 'px';
 }
@@ -157,6 +167,12 @@ function handleShovelHit(castle) {
     if (castleStates[idx] >= 2) return;
 
     playSandSound();
+    
+    // Mainkan animasi ayunan sekop saat mengenai istana
+    shovel.classList.remove('digging');
+    void shovel.offsetWidth; // Trigger reflow
+    shovel.classList.add('digging');
+    
     castleStates[idx]++;
     const sandLayer = castle.querySelector('.sand-layer');
 
@@ -170,31 +186,58 @@ function handleShovelHit(castle) {
 }
 
 shovel.addEventListener('pointerdown', (e) => {
-    if (e.button !== 0) return;
+    if (e.button !== 0 && e.pointerType === 'mouse') return; // Abaikan klik kanan
     e.preventDefault();
+    e.stopPropagation(); // SANGAT PENTING: Cegah map ikut tergeser saat kita menarik sekop
+    
     isDraggingShovel = true;
     shovelPointerId = e.pointerId;
     shovel.setPointerCapture(shovelPointerId);
+    
+    // Offset juga harus dihitung berdasarkan skala zoom
     const rect = shovel.getBoundingClientRect();
-    shovelOffsetX = e.clientX - rect.left;
-    shovelOffsetY = e.clientY - rect.top;
-    shovel.style.right = 'auto';
-    shovel.classList.add('dragging');
+    shovelOffsetX = (e.clientX - rect.left) / scale;
+    shovelOffsetY = (e.clientY - rect.top) / scale;
 });
 
 shovel.addEventListener('pointermove', (e) => {
     if (!isDraggingShovel || e.pointerId !== shovelPointerId) return;
     moveShovel(e.clientX, e.clientY);
+    // Cek tumpang-tindih dengan setiap castle-spot saat sedang drag
+    try {
+        const shovelRect = shovel.getBoundingClientRect();
+        const spots = document.querySelectorAll('.castle-spot');
+        let hitFound = false;
+        spots.forEach((spot) => {
+            const idx = Number(spot.getAttribute('data-index'));
+            const r = spot.getBoundingClientRect();
+            const intersects = !(shovelRect.right < r.left || shovelRect.left > r.right || shovelRect.bottom < r.top || shovelRect.top > r.bottom);
+            if (intersects) {
+                hitFound = true;
+                if (lastHitIdx !== idx) {
+                    lastHitIdx = idx;
+                    handleShovelHit(spot);
+                }
+            }
+        });
+        if (!hitFound) lastHitIdx = null;
+    } catch (err) {
+        // jika terjadi error, jangan ganggu pengalaman drag
+        console.warn('Shovel hit detection error', err);
+    }
 });
 
 function endShovelDrag(e) {
     if (!isDraggingShovel || e.pointerId !== shovelPointerId) return;
     isDraggingShovel = false;
-    shovel.classList.remove('dragging');
     shovel.releasePointerCapture(shovelPointerId);
     shovelPointerId = null;
 
+    // Sembunyikan sekop sesaat untuk mendeteksi apa yang ada di bawahnya
+    shovel.style.visibility = 'hidden'; 
     const hitElement = document.elementFromPoint(e.clientX, e.clientY);
+    shovel.style.visibility = 'visible';
+    
     const castle = hitElement && hitElement.closest('.castle-spot');
     handleShovelHit(castle);
 }

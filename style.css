@@ -119,22 +119,30 @@ body {
    ========================================================================== */
 
 /* Kursor Alat Sekop Kustom */
+/* Kursor Alat Sekop Kustom */
 #shovel {
-    position: fixed;
-    left: calc(100vw - 108px);
-    right: auto;
-    top: 46%;
-    width: 90px;
-    height: 90px;
+    position: absolute; /* Ubah dari fixed ke absolute agar menempel di map */
+    width: 80px;
+    height: 80px;
+    
+    /* Posisi awal (initial) sekop di area map */
+    bottom: 50px; 
+    right: 50px;
+    left: auto;
+    top: auto;
+    
     background-image: url('images/sekop.png');
     background-size: contain;
     background-repeat: no-repeat;
-    pointer-events: auto;
+    
+    /* pointer-events JANGAN none, agar bisa diklik/drag */
+    pointer-events: auto; 
     z-index: 9999;
-    opacity: 1;
-    cursor: grab;
-    transform-origin: center bottom;
-    transition: transform 0.15s ease, opacity 0.15s ease;
+    
+    /* Tampilkan sekop sejak awal */
+    opacity: 1; 
+    transform-origin: bottom left;
+    touch-action: none; /* Cegah browser scroll saat drag sekop di HP */
 }
 
 #shovel.dragging {
