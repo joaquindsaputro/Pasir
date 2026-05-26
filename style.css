@@ -115,15 +115,24 @@ body {
 /* Kursor Alat Sekop Kustom */
 #shovel {
     position: fixed;
-    width: 80px;
-    height: 80px;
+    right: 18px;
+    top: 46%;
+    width: 90px;
+    height: 90px;
     background-image: url('images/sekop.png');
     background-size: contain;
     background-repeat: no-repeat;
-    pointer-events: none;
+    pointer-events: auto;
     z-index: 9999;
-    opacity: 0;
-    transform-origin: bottom left;
+    opacity: 1;
+    cursor: grab;
+    transform-origin: center bottom;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+#shovel.dragging {
+    cursor: grabbing;
+    transform: scale(1.05);
 }
 
 /* Animasi Menyenggol / Menyekop Pasir */

@@ -127,38 +127,79 @@ function playCrackSound(intensity) {
 
 // --- 3. LOGIKA INTERAKSI AYUNAN SEKOP & PENGHANCURAN ---
 const shovel = document.getElementById('shovel');
+let isDraggingShovel = false;
+let shovelPointerId = null;
+let shovelOffsetX = 0;
+let shovelOffsetY = 0;
 
-document.querySelectorAll('.castle-spot').forEach(el => {
-    el.addEventListener('pointerdown', (e) => {
-        const idx = el.getAttribute('data-index');
-        
-        // Kunci fungsi bila gundukan pasir sudah digali habis
-        if (castleStates[idx] >= 2) return;
-        
-        // Pindahkan posisi koordinat gambar alat sekop ke area klik
-        shovel.style.left = (e.clientX - 40) + 'px';
-        shovel.style.top = (e.clientY - 40) + 'px';
-        shovel.style.opacity = '1';
-        shovel.classList.remove('digging');
-        void shovel.offsetWidth; // Memicu pengaturan ulang DOM agar animasi dapat berulang
-        shovel.classList.add('digging');
-        
-        playSandSound();
-        
-// Update visual gambar runtuhnya gundukan tanah pasir
-        castleStates[idx]++;
-        const sandLayer = el.querySelector('.sand-layer'); // Targetkan Layer 3
-        
-        if (castleStates[idx] === 1) {
-            sandLayer.style.backgroundImage = `url('images/2.png')`;
-        } else if (castleStates[idx] === 2) {
-            sandLayer.style.backgroundImage = `url('images/3.png')`;
-            // Munculkan telur dari Layer 2
-            const egg = el.querySelector('.buried-egg');
-            egg.classList.add('show');
-        }
-    });
+function clampShovelPosition(x, y) {
+    const minX = 0;
+    const minY = 0;
+    const maxX = window.innerWidth - shovel.offsetWidth;
+    const maxY = window.innerHeight - shovel.offsetHeight;
+    return {
+        x: Math.min(Math.max(minX, x), maxX),
+        y: Math.min(Math.max(minY, y), maxY)
+    };
+}
+
+function moveShovel(clientX, clientY) {
+    const targetX = clientX - shovelOffsetX;
+    const targetY = clientY - shovelOffsetY;
+    const pos = clampShovelPosition(targetX, targetY);
+    shovel.style.left = pos.x + 'px';
+    shovel.style.top = pos.y + 'px';
+}
+
+function handleShovelHit(castle) {
+    if (!castle) return;
+    const idx = Number(castle.getAttribute('data-index'));
+    if (castleStates[idx] >= 2) return;
+
+    playSandSound();
+    castleStates[idx]++;
+    const sandLayer = castle.querySelector('.sand-layer');
+
+    if (castleStates[idx] === 1) {
+        sandLayer.style.backgroundImage = `url('images/2.png')`;
+    } else if (castleStates[idx] === 2) {
+        sandLayer.style.backgroundImage = `url('images/3.png')`;
+        const egg = castle.querySelector('.buried-egg');
+        if (egg) egg.classList.add('show');
+    }
+}
+
+shovel.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    isDraggingShovel = true;
+    shovelPointerId = e.pointerId;
+    shovel.setPointerCapture(shovelPointerId);
+    const rect = shovel.getBoundingClientRect();
+    shovelOffsetX = e.clientX - rect.left;
+    shovelOffsetY = e.clientY - rect.top;
+    shovel.classList.add('dragging');
 });
+
+shovel.addEventListener('pointermove', (e) => {
+    if (!isDraggingShovel || e.pointerId !== shovelPointerId) return;
+    moveShovel(e.clientX, e.clientY);
+});
+
+function endShovelDrag(e) {
+    if (!isDraggingShovel || e.pointerId !== shovelPointerId) return;
+    isDraggingShovel = false;
+    shovel.classList.remove('dragging');
+    shovel.releasePointerCapture(shovelPointerId);
+    shovelPointerId = null;
+
+    const hitElement = document.elementFromPoint(e.clientX, e.clientY);
+    const castle = hitElement && hitElement.closest('.castle-spot');
+    handleShovelHit(castle);
+}
+
+shovel.addEventListener('pointerup', endShovelDrag);
+shovel.addEventListener('pointercancel', endShovelDrag);
 
 // --- 4. NAVIGATION INTERACTION (ZOOM IN-OUT PAN CAMERA) ---
 const world = document.getElementById('world');
@@ -179,7 +220,10 @@ function updateTransform() {
 viewport.addEventListener('pointerdown', (e) => {
     // Matikan pergeseran jika jendela penetasan tengah layar sedang aktif ditonton
     if (document.getElementById('hatch-overlay').classList.contains('active')) return;
-    
+    if (isDraggingShovel) return;
+    if (e.target.closest('#shovel')) return;
+    if (e.target.closest('.castle-spot')) return;
+
     isDragging = true;
     startX = e.clientX - posX;
     startY = e.clientY - posY;
@@ -187,8 +231,7 @@ viewport.addEventListener('pointerdown', (e) => {
 
 viewport.addEventListener('pointermove', (e) => {
     if (!isDragging) return;
-    // Cegah peta ikut bergeser secara tidak sengaja ketika sedang fokus mengetuk/menyekop pasir
-    if (e.target.closest('.castle-spot')) return;
+    if (isDraggingShovel) return;
 
     posX = e.clientX - startX;
     posY = e.clientY - startY;
